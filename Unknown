@@ -1,0 +1,72 @@
+local gui = Instance.new("ScreenGui")
+gui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0.3, 0, 0.3, 0)
+frame.Position = UDim2.new(0.5, 0, 0.5, 0)
+frame.BackgroundColor3 = Color3.new(1, 1, 1)
+frame.BorderSizePixel = 5
+frame.Parent = gui
+
+local textBox = Instance.new("TextBox")
+textBox.Size = UDim2.new(0.5, 0, 0.1, 0)
+textBox.Position = UDim2.new(0.25, 0, 0.2, 0)
+textBox.PlaceholderText = "Enter Player Username"
+textBox.Parent = frame
+
+local hackButton = Instance.new("TextButton")
+hackButton.Size = UDim2.new(0.2, 0, 0.1, 0)
+hackButton.Position = UDim2.new(0.4, 0, 0.4, 0)
+hackButton.Text = "Hack"
+hackButton.Parent = frame
+
+local remoteEvent = Instance.new("RemoteEvent")
+remoteEvent.Name = "HackEvent"
+remoteEvent.Parent = game:GetService("ReplicatedStorage")
+
+local function onHackClicked(player, username)
+    local targetPlayer = game.Players:FindFirstChild(username)
+    if targetPlayer then
+        targetPlayer:Kick("You were hacked by Hacker Hahahha🫥")
+    else
+        print("Player not found.")
+    end
+end
+
+remoteEvent.OnServerEvent:Connect(onHackClicked)
+
+hackButton.MouseButton1Click:Connect(function()
+    local username = textBox.Text
+    game.ReplicatedStorage.HackEvent:FireServer(username)
+end)
+
+local dragging
+local dragInput
+local dragStart
+local startPos
+
+frame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+frame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
+end)
+
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
